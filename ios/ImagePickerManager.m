@@ -29,6 +29,7 @@
 
 NSString *errCameraUnavailable = @"camera_unavailable";
 NSString *errPermission = @"permission";
+NSString *cameraPermissionDenied = @"permission-denied";
 NSString *errOthers = @"others";
 RNImagePickerTarget target;
 
@@ -104,6 +105,17 @@ RCT_EXPORT_METHOD(launchImageLibrary:(NSDictionary *)options callback:(RCTRespon
             [self showPickerViewController:picker];
         }];
     } else {
+        // If target is camera then before opening check for permission
+        if (target == camera) {
+            [self checkCameraPermissions:^(BOOL granted) {
+                if (granted) {
+                    [self showPickerViewController: picker];
+                } else {
+                    self.callback(@[@{@"errorCode": cameraPermissionDenied}]);
+                }
+            }];
+            return;
+        }
       [self showPickerViewController:picker];
     }
 }
